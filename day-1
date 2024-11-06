@@ -1,0 +1,68 @@
+What is Kubernetes?
+	Kubernetes (K8s) is an open-source platform used to automate the deployment, scaling, and management of containerized applications (like Docker containers).
+
+Core Kubernetes Components and How They Work
+1.	Master Node (Control Plane):
+o	The Master node manages the entire Kubernetes cluster. It is responsible for making global decisions (like scheduling), detecting and responding to cluster events (like starting new pods), and managing the state of the system.
+o	It has the following key components:
+o	API Server (kube-apiserver):
+	The central point of communication. All requests (like creating, updating, deleting resources) are made to the API server. It validates and processes these requests.
+	It exposes the Kubernetes API, which allows clients (e.g., kubectl, the Kubernetes command-line tool, or other clients) to interact with the cluster.
+o	Scheduler (kube-scheduler):
+	The Scheduler looks at the current state of the cluster and assigns containers (or "pods") to available worker nodes.
+	It makes decisions based on resource availability (CPU, memory), policies, and other factors.
+o	Controller Manager (kube-controller-manager):
+	The Controller Manager maintains the desired state of the cluster.
+	It runs controllers that are responsible for making sure that the cluster is always in the desired state (e.g., making sure the number of pods matches the desired number, handling node failures, etc.).
+
+2.	Worker Node:
+o	Worker nodes are where the application containers actually run. A Kubernetes cluster usually has multiple worker nodes to scale out the application.
+o	Each worker node has the following key components:
+o	Kubelet:
+	The Kubelet is an agent running on each worker node. It ensures that the containers (pods) on the node are running in the desired state.
+	It communicates with the API Server to get instructions on which containers to run and reports back on their status.
+o	Kube Proxy:
+	Kube Proxy maintains network rules on each node to ensure that the network traffic is properly routed to the right containers. It ensures that network services (like load balancing) work across the cluster.
+o	Container Runtime:
+	The Container Runtime (like Docker, containerd) is responsible for running containers on the worker node.
+
+
+
+How They Communicate (Flow of Operations)
+Here’s how these components work together and communicate with each other:
+1.	User Request:
+o	A user (or an automation tool) sends a request to the API Server (e.g., using kubectl or an internal service).
+2.	API Server:
+o	The API Server validates the request (e.g., if it’s a valid Kubernetes resource like a pod) and updates the Kubernetes state.
+o	It then informs other components like the Scheduler if a pod needs to be scheduled, or the Controller Manager to maintain desired states.
+3.	Scheduler:
+o	The Scheduler looks at the available worker nodes and assigns the pod to a node based on available resources and constraints (like CPU and memory).
+4.	Kubelet on Worker Node:
+o	The Kubelet on the selected worker node receives the pod request from the API Server (via the Scheduler).
+o	The Kubelet then makes sure that the required containers for the pod are running. If not, it will pull the container image from the registry and start the container.
+5.	Kube Proxy:
+o	The Kube Proxy ensures that any network traffic (like HTTP requests or API calls) can properly reach the pod by setting up routing rules on the worker node.
+6.	Controller Manager:
+o	If there's any need to adjust the cluster's state (e.g., scaling up or down the number of pods), the Controller Manager does this by creating or deleting pods based on the current state and desired state of the system.
+Flow Summary
+1.	User interacts with the API Server to create or manage resources.
+2.	The API Server communicates with the Scheduler to schedule pods.
+3.	The Scheduler assigns pods to a worker node.
+4.	The Kubelet on the worker node ensures containers are running.
+5.	The Kube Proxy ensures network traffic is routed correctly.
+6.	The Controller Manager maintains the overall desired state of the cluster.
+
+  Key Points of Communication:
+•	API Server is the central point of contact for all components.
+•	The Kubelet on each node communicates with the API Server to ensure the desired state (e.g., running containers) is maintained.
+•	The Scheduler talks to the API Server to allocate resources (pods) to worker nodes.
+•	Kube Proxy ensures that network traffic between services and pods flows correctly.
+  
+IMP POINTS
+•	"Kubectl is a command-line tool used to run commands against your Kubernetes (K8s) cluster. You interact with the K8s cluster through kubectl itself."
+•	Whenever we enter a command, the first request is sent to the API server. The API server is one of the major components in the entire Kubernetes architecture, as it interacts with the external world. It validates requests, handles server communication, manages resources, and is responsible for authentication and authorization.
+•	Whenever you run a command, it first interacts with the API server. When the API server receives a request, it validates the request and stores the deployment information in ETCD, which acts as a distributed key-value store (similar to a database). ETCD is used to store the configuration data and state of the entire Kubernetes cluster, including all specifications, such as deployments, services, and other resources.
+•	Another important component in Kubernetes is the Scheduler. The Scheduler communicates with the API server, which stores the specifications in ETCD when it receives a request. The Scheduler is primarily responsible for assigning pods to the available worker nodes. It is considered an intelligent component because it has detailed knowledge of the resources and capacity of each worker node and uses this information to make optimal scheduling decisions.
+•	The Controller Manager is responsible for maintaining the desired state of the cluster. For example, if an entire worker node goes down, the Controller Manager ensures that the system reacts appropriately. Within the Controller Manager, there are components like the Node Controller and the Replication Controller. These controllers work together to reschedule pods from the failed node to other available worker nodes, ensuring that the desired number of replicas are maintained, and the system remains in the desired state.
+•	The kubelet is responsible for ensuring that containers on the node are running as expected. For example, if you have 6 nginx pods scheduled across multiple nodes, the kubelet on each node monitors the state of the nginx pods. If any of these pods fail, the kubelet will automatically restart the failed containers to bring them back to the desired state. Additionally, the kubelet reports the status of the node and its containers back to the control plane, ensuring the overall health of the cluster.
+•	kube-proxy is responsible for managing network communication in a Kubernetes cluster. For example, when you deploy a service with 6 pods and set the service type to NodePort, kube-proxy ensures that the service can be accessed externally. Each pod in the deployment will have its own IP address. The kube-proxy handles routing traffic to the appropriate pod by assigning network rules to ensure the correct IP addresses and ports are used for communication between clients and the pods.
